@@ -269,11 +269,11 @@ async function detail(id) {
 async function accessPage() {
   if (user.role !== "admin") {
     $("#page").innerHTML =
-      `<div class="card account-card">${icon("shield")}<h2>Access is part of good support.</h2><p>You are signed in as ${esc(user.role === "user" ? "an employee" : "a support agent")}. User management is available to administrators.</p><div class="notice">Your role is enforced by the server on every request. Hiding a button is only part of the experience.</div><button data-action="verify" style="margin-top:18px">Test protected endpoint ${icon("arrow")}</button><pre id="verify-result" class="notice" hidden></pre></div>`;
+      `<div class="card account-card">${icon("shield")}<h2>Access is part of good support.</h2><p>You are signed in as ${esc(user.role === "user" ? "an employee" : "a support agent")}. User management is available to administrators.</p><div class="notice">Your role is enforced by the server on every request. Contact your administrator if your responsibilities have changed.</div><button data-action="verify" style="margin-top:18px">Test protected endpoint ${icon("arrow")}</button><pre id="verify-result" class="notice" hidden></pre></div>`;
     return;
   }
   $("#page").innerHTML =
-    `<section class="queue"><div class="section-top"><div><h2>People & permissions</h2><p>Manage workspace roles. Your own role and demo accounts are protected.</p></div><span class="badge">${users.length} MEMBERS</span></div><div class="users-wrap"><table class="users-table"><thead><tr><th>Team member</th><th>Email</th><th>Role</th></tr></thead><tbody>${users.map((u) => `<tr><td><strong>${esc(u.name)}</strong>${u.id === user.id ? ' <span class="badge">YOU</span>' : ""}</td><td>${esc(u.email)}</td><td><select class="role-select" aria-label="Role for ${esc(u.name)}" data-user="${u.id}" ${u.id === user.id ? "disabled" : ""}>${["user", "agent", "admin"].map((r) => `<option ${u.role === r ? "selected" : ""}>${r}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div></section><div class="heading" style="margin-top:28px"><h2>Activity log</h2><button data-action="audit">${icon("clock")}Refresh activity</button></div><div id="audit" class="card">Loading activity…</div>`;
+    `<section class="queue"><div class="section-top"><div><h2>People & permissions</h2><p>Manage workspace roles. Your own role and demo accounts are protected.</p></div><span class="badge">${users.length} MEMBERS</span></div><div class="users-wrap"><table class="users-table"><thead><tr><th>Team member</th><th>Email</th><th>Role</th></tr></thead><tbody>${users.map((u) => `<tr><td><strong>${esc(u.name)}</strong>${u.id === user.id ? ' <span class="badge">YOU</span>' : ""}</td><td>${esc(u.email)}</td><td><select class="role-select" aria-label="Role for ${esc(u.name)}" data-user="${u.id}" ${u.id === user.id ? "disabled" : ""}>${["user", "agent", "admin"].map((r) => `<option ${u.role === r ? "selected" : ""}>${r}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div></section><div class="heading" style="margin-top:28px"><h2>Activity log</h2><button data-action="audit">${icon("clock")}Refresh activity</button></div><div id="audit" class="card">Loading activity…</div><details class="card" style="margin-top:20px"><summary>Access verification</summary><p class="muted">Check your current permissions.</p><button data-action="verify">Test protected endpoint</button><pre id="verify-result" class="notice" hidden></pre></details>`;
   document.querySelectorAll("[data-user]").forEach(
     (el) =>
       (el.onchange = async () => {
@@ -392,15 +392,14 @@ document.addEventListener("click", async (e) => {
       case "audit":
         await audit();
         break;
-      case "verify":
-        try {
-          await api("/admin/users");
-        } catch (err) {
-          const result = $("#verify-result");
-          result.hidden = false;
-          result.textContent = "403 Forbidden\n" + err.message;
-        }
+      case "verify": {
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+        const result = $('#verify-result');
+        result.hidden = false;
+        result.textContent = `HTTP ${response.status} ${response.status === 200 ? 'OK' : response.status === 403 ? 'Forbidden' : 'Unauthorized'}\nGET /api/admin/users\n` + (response.ok ? `Access granted · ${data.length} workspace members` : data.error);
         break;
+      }
       case "export": {
         const cell = (v) =>
           '"' +
