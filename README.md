@@ -14,6 +14,12 @@ An IT support workspace for employees, support agents, and administrators. Built
 
 [Live application](https://itdesk-rachit.onrender.com) · [GitHub repository](https://github.com/rachit1807/week6-task3-itdesk-rbac)
 
+## Interface previews
+
+| Sign in | Registration | Role protection |
+|---|---|---|
+| ![Sign in](docs/screenshots/itdesk-login.png) | ![Registration](docs/screenshots/itdesk-registration.png) | ![HTTP 403 verification](docs/screenshots/itdesk-403.png) |
+
 ## The problem
 
 Internal IT teams need to receive requests, assign the right specialist, and protect employee information. ITDesk gives each role an appropriate workspace while checking permissions on the server for every protected request.
